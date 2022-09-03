@@ -41,25 +41,28 @@ from momomail.gmail.client import GmailClient
 
 client=GmailClient(client_secret,refresh_token)
 ```
-
+**All the client class inherited from GmailClient, so you can initialize a client object using same process.**
 ## MessageClient
 Message Client deal with batch action on messages, the available methods are listed below:
-
+```python
+from momomail.gmail.message import MessageClient
+message_client=MessageClient.setup()
+```
 - **search messages**: <br>
 search_message support arguments inputs like gmail web ui: search string, before, after, read or unread, from, to
     ```python
-    messages=client.message_client.search_messages("twitter")
+    messages=message_client.search_messages("twitter")
     ```
 - **get message**: <br>
 get_message is used to get detail of a message. The return object is a **Message** object.
     ```python
-    message:Message=client.message_client.get_message(id="message_id")
+    message:Message=message_client.get_message(id="message_id")
     ```
 
 - **batch modify**: <br>
 batch_modify modify messages' labels
     ```python
-    client.message_client.batch_modify(ids=["aaa","bbb"],add_label_ids["TEST"],remove_label_ids["SPAM"])
+    message_client.batch_modify(ids=["aaa","bbb"],add_label_ids["TEST"],remove_label_ids["SPAM"])
     ```
 
 Gmail moves messages into trash can by adding a "TRASH" label. Thus, message client uses this property to make batch trash and batch untrash method.  
@@ -67,13 +70,13 @@ Gmail moves messages into trash can by adding a "TRASH" label. Thus, message cli
 - **batch trash**: <br>
 Move messages to trash can 
     ```python
-    client.message_client.batch_trash(ids=["aaa","bbb"])
+    message_client.batch_trash(ids=["aaa","bbb"])
     ```
 
 - **batch untrash**: <br>
 Move messages out of trash can 
     ```python
-    client.message_client.batch_untrash(ids=["aaa","bbb"])
+    message_client.batch_untrash(ids=["aaa","bbb"])
     ```
 
 
