@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-PYTHON_SRC= $(wildcard *.py) $(wildcard */*.py)
+PYTHON_SRC= $(wildcard *.py) $(wildcard */*.py) $(wildcard */*/*.py)
 
 fmt:
 	@echo "Running black"
@@ -14,7 +14,10 @@ flake:
 
 pytype:
 	@echo "Running pytype"
-	@source venv/bin/activate;\
+	source venv/bin/activate;\
 	pytype $(PYTHON_SRC)
 
 ck: fmt flake pytype
+
+clear:
+	find . -type d -name "__pycache__" -o -type d -name "*.egg-info" -o -type d -name ".pytype" -o -maxdepth 1 -type d -name "build" | xargs rm -rf

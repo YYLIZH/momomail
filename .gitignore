@@ -3,7 +3,6 @@ __pycache__/
 
 
 # Distribution / packaging
-.Python
 build/
 develop-eggs/
 dist/
@@ -42,16 +41,6 @@ cover/
 # Sphinx documentation
 docs/_build/
 
-
-# PyBuilder
-.pybuilder/
-target/
-
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-
 # Environments
 .env
 .venv
@@ -65,5 +54,5 @@ venv.bak/
 .pytype/
 
 # google credential
-credentials.json
 client_secret*.json
+refresh_token.json
