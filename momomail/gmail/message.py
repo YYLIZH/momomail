@@ -69,7 +69,9 @@ class Message:
         }
         mrx = re.search(r"(\d+)\s+(\w+)\s+(\d+)", date_string)
         if mrx:
-            return "-".join([mrx.group(3), month[mrx.group(2)], mrx.group(1)])
+            return "-".join(
+                [mrx.group(3), month[mrx.group(2)], mrx.group(1)]
+            )
         return "NA"
 
     @property
@@ -127,7 +129,9 @@ class Message:
             body["addLabelIds"] = add_label_ids
         if remove_label_ids:
             body["removeLabelIds"] = remove_label_ids
-        self.client.modify(userId="me", id=self.id, body=body).execute()
+        self.client.modify(
+            userId="me", id=self.id, body=body
+        ).execute()
 
     def trash(self) -> None:
         """Move this message to trash."""
@@ -139,15 +143,21 @@ class Message:
 
     def dump(self) -> None:
         """Dump the mail content"""
-        mail_dir = Path(f"{self.subject}-{self._format_date(self.date)}")
+        mail_dir = Path(
+            f"{self.subject}-{self._format_date(self.date)}"
+        )
         mail_dir.mkdir()
         if self.body:
             with open(mail_dir / "body.txt", "w") as f:
                 f.write(self.body)
         for part in self.parts:
             # attachment need to use byte format to write
-            buffer_format = "wb" if part["type"] == "attachment" else "w"
-            with open(mail_dir / part["filename"], buffer_format) as f:
+            buffer_format = (
+                "wb" if part["type"] == "attachment" else "w"
+            )
+            with open(
+                mail_dir / part["filename"], buffer_format
+            ) as f:
                 f.write(part["data"])
 
     def get_attachment(self, attachment_id: str) -> bytes:
@@ -184,7 +194,9 @@ class Message:
                 }
         else:
             if part.get("body", {}).get("attachmentId"):
-                data = self.get_attachment(part["body"]["attachmentId"])
+                data = self.get_attachment(
+                    part["body"]["attachmentId"]
+                )
                 filename = part.get("filename", "") or "sample"
                 return {
                     "filename": filename,
@@ -194,7 +206,9 @@ class Message:
 
 
 class MessageClient(GmailClient):
-    def __init__(self, client_secret: dict, refresh_token: str) -> None:
+    def __init__(
+        self, client_secret: dict, refresh_token: str
+    ) -> None:
         super().__init__(client_secret, refresh_token)
         self.client = self.service.users().messages()
 
@@ -274,10 +288,14 @@ class MessageClient(GmailClient):
             ).execute()
         else:
             result = self.client.list(
-                userId="me", pageToken=page_token, includeSpamTrash=include_spam_trash
+                userId="me",
+                pageToken=page_token,
+                includeSpamTrash=include_spam_trash,
             ).execute()
 
-        if not exhausted or (exhausted and not result.get("nextPageToken")):
+        if not exhausted or (
+            exhausted and not result.get("nextPageToken")
+        ):
             result.pop("resultSizeEstimate")
             return result
 
@@ -345,4 +363,6 @@ class MessageClient(GmailClient):
         You can use batch_trash instead to put messages into trash can.
 
         """
-        self.client.batchDelete(userId="me", body={"ids": ids}).execute()
+        self.client.batchDelete(
+            userId="me", body={"ids": ids}
+        ).execute()

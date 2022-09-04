@@ -25,18 +25,24 @@ def get_client_secret() -> dict:
 
 def get_refresh_token() -> None:
     """Get refresh token for GmailClient"""
-    flow = InstalledAppFlow.from_client_config(get_client_secret(), scopes=SCOPES)
+    flow = InstalledAppFlow.from_client_config(
+        get_client_secret(), scopes=SCOPES
+    )
     flow.redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
     auth_url, _ = flow.authorization_url()
     print(auth_url)
     code = input("Please enter the code:")
     flow.fetch_token(code=code)
     with open("refresh_token.json", "w") as f:
-        json.dump({"refresh_token": flow.credentials.refresh_token}, f)
+        json.dump(
+            {"refresh_token": flow.credentials.refresh_token}, f
+        )
 
 
 class GmailClient:
-    def __init__(self, client_secret: dict, refresh_token: str) -> None:
+    def __init__(
+        self, client_secret: dict, refresh_token: str
+    ) -> None:
         # Try to get refresh token
         if not os.path.isfile("refresh_token.json"):
             get_refresh_token()

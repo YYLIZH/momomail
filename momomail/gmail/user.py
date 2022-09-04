@@ -22,7 +22,9 @@ class LabelListVisibility(Enum):
 
 
 class LabelClient(GmailClient):
-    def __init__(self, client_secret: dict, refresh_token: str) -> None:
+    def __init__(
+        self, client_secret: dict, refresh_token: str
+    ) -> None:
         super().__init__(client_secret, refresh_token)
         self.client = self.service.users().labels()
 
@@ -34,11 +36,14 @@ class LabelClient(GmailClient):
     @property
     def available_labels(self) -> List[dict]:
         """List all the labels which are available to change"""
-        return [label["name"] for label in self.list() if label["type"] == "user"]
+        return [
+            label["name"]
+            for label in self.list()
+            if label["type"] == "user"
+        ]
 
     def create(self):
         """Creates a new label."""
-        pass
 
     def delete(self, id):
         """Immediately and permanently deletes the specified label and removes it from any messages and threads that it is applied to."""
@@ -60,10 +65,14 @@ class LabelClient(GmailClient):
         """
         if id not in self.available_labels:
             raise LabelNotAvailableError(id)
-        return self.client.patch(userId="me", id=id, body=body).execute()
+        return self.client.patch(
+            userId="me", id=id, body=body
+        ).execute()
 
     def update(self, id: str, body: dict):
         """Updates the specified label."""
         if id not in self.available_labels:
             raise LabelNotAvailableError(id)
-        return self.client.update(userId="me", id=id, body=body).execute()
+        return self.client.update(
+            userId="me", id=id, body=body
+        ).execute()
