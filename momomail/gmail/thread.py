@@ -11,7 +11,10 @@ class Thread:
     """Thread ORM"""
 
     def __init__(
-        self, raw_data: dict, client: Resource, message_client: Resource
+        self,
+        raw_data: dict,
+        client: Resource,
+        message_client: Resource,
     ) -> None:
         self.raw_data = raw_data
         self.client = client
@@ -66,7 +69,9 @@ class ThreadClient(GmailClient):
     def get(self, id: str) -> Thread:
         thread = self.client.get(userId="me", id=id).execute()
         return Thread(
-            raw_data=thread, client=self.client, message_client=self.message_client
+            raw_data=thread,
+            client=self.client,
+            message_client=self.message_client,
         )
 
     def list(
@@ -133,7 +138,9 @@ class ThreadClient(GmailClient):
             ).execute()
         else:
             result = self.client.list(
-                userId="me", pageToken=page_token, includeSpamTrash=include_spam_trash
+                userId="me",
+                pageToken=page_token,
+                includeSpamTrash=include_spam_trash,
             ).execute()
 
         if not exhausted or (exhausted and not result.get("nextPageToken")):

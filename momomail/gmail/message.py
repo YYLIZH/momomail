@@ -1,11 +1,15 @@
 import copy
+import mimetypes
+import os
 import re
 import time
-from base64 import urlsafe_b64decode
+from base64 import urlsafe_b64decode, urlsafe_b64encode
+from email.message import EmailMessage
 from pathlib import Path
 from typing import Dict, List, Optional
 
 from googleapiclient.discovery import Resource
+
 from .client import GmailClient
 
 
@@ -274,7 +278,9 @@ class MessageClient(GmailClient):
             ).execute()
         else:
             result = self.client.list(
-                userId="me", pageToken=page_token, includeSpamTrash=include_spam_trash
+                userId="me",
+                pageToken=page_token,
+                includeSpamTrash=include_spam_trash,
             ).execute()
 
         if not exhausted or (exhausted and not result.get("nextPageToken")):
@@ -306,8 +312,36 @@ class MessageClient(GmailClient):
             body["removeLabelIds"] = remove_label_ids
         self.client.modify(userId="me", id=id, body=body).execute()
 
-    def send(self):
-        pass
+    def send(
+        self,
+        to: str,
+        cc: str,
+        subject: str,
+        content: str,
+        attachment_path: str,
+    ):
+        """This method will create a draft and send."""
+        message = EmailMessage()
+        message.set_content(content)
+        message["To"] = to
+        message["From"] = "aaa"
+        message["Subject"] = subject
+
+        # attachment file
+        attachment_filename = os.path.basename(attachment_path)
+        # guessing the MIME type
+        type_subtype = (mimetypes.guess_type(attachment_filename))[0] or ""
+        maintype, subtype = type_subtype.split("/")
+
+        with open(attachment_filename, "rb") as fp:
+            attachment_data = fp.read()
+        message.add_attachment(attachment_data, maintype, subtype)
+
+        # encoded message
+        encoded_message = urlsafe_b64encode(message.as_bytes()).decode()
+
+        create_message = {"raw": encoded_message}
+        self.client.send(userId="me", body=create_message).execute()
 
     def trash(self, id: str) -> None:
         """Move message to trash."""
