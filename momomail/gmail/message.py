@@ -1,11 +1,15 @@
 import copy
+import mimetypes
+import os
 import re
 import time
-from base64 import urlsafe_b64decode
+from base64 import urlsafe_b64decode, urlsafe_b64encode
+from email.message import EmailMessage
 from pathlib import Path
 from typing import Dict, List, Optional
 
 from googleapiclient.discovery import Resource
+
 from .client import GmailClient
 
 
@@ -69,9 +73,7 @@ class Message:
         }
         mrx = re.search(r"(\d+)\s+(\w+)\s+(\d+)", date_string)
         if mrx:
-            return "-".join(
-                [mrx.group(3), month[mrx.group(2)], mrx.group(1)]
-            )
+            return "-".join([mrx.group(3), month[mrx.group(2)], mrx.group(1)])
         return "NA"
 
     @property
@@ -129,9 +131,7 @@ class Message:
             body["addLabelIds"] = add_label_ids
         if remove_label_ids:
             body["removeLabelIds"] = remove_label_ids
-        self.client.modify(
-            userId="me", id=self.id, body=body
-        ).execute()
+        self.client.modify(userId="me", id=self.id, body=body).execute()
 
     def trash(self) -> None:
         """Move this message to trash."""
@@ -143,21 +143,15 @@ class Message:
 
     def dump(self) -> None:
         """Dump the mail content"""
-        mail_dir = Path(
-            f"{self.subject}-{self._format_date(self.date)}"
-        )
+        mail_dir = Path(f"{self.subject}-{self._format_date(self.date)}")
         mail_dir.mkdir()
         if self.body:
             with open(mail_dir / "body.txt", "w") as f:
                 f.write(self.body)
         for part in self.parts:
             # attachment need to use byte format to write
-            buffer_format = (
-                "wb" if part["type"] == "attachment" else "w"
-            )
-            with open(
-                mail_dir / part["filename"], buffer_format
-            ) as f:
+            buffer_format = "wb" if part["type"] == "attachment" else "w"
+            with open(mail_dir / part["filename"], buffer_format) as f:
                 f.write(part["data"])
 
     def get_attachment(self, attachment_id: str) -> bytes:
@@ -194,9 +188,7 @@ class Message:
                 }
         else:
             if part.get("body", {}).get("attachmentId"):
-                data = self.get_attachment(
-                    part["body"]["attachmentId"]
-                )
+                data = self.get_attachment(part["body"]["attachmentId"])
                 filename = part.get("filename", "") or "sample"
                 return {
                     "filename": filename,
@@ -206,9 +198,7 @@ class Message:
 
 
 class MessageClient(GmailClient):
-    def __init__(
-        self, client_secret: dict, refresh_token: str
-    ) -> None:
+    def __init__(self, client_secret: dict, refresh_token: str) -> None:
         super().__init__(client_secret, refresh_token)
         self.client = self.service.users().messages()
 
@@ -293,9 +283,7 @@ class MessageClient(GmailClient):
                 includeSpamTrash=include_spam_trash,
             ).execute()
 
-        if not exhausted or (
-            exhausted and not result.get("nextPageToken")
-        ):
+        if not exhausted or (exhausted and not result.get("nextPageToken")):
             result.pop("resultSizeEstimate")
             return result
 
@@ -324,8 +312,29 @@ class MessageClient(GmailClient):
             body["removeLabelIds"] = remove_label_ids
         self.client.modify(userId="me", id=id, body=body).execute()
 
-    def send(self):
-        pass
+    def send(self, to: str, cc: str, subject: str, content: str, attachment_path: str):
+        """This method will create a draft and send."""
+        message = EmailMessage()
+        message.set_content(content)
+        message["To"] = to
+        message["From"] = "aaa"
+        message["Subject"] = subject
+
+        # attachment file
+        attachment_filename = os.path.basename(attachment_path)
+        # guessing the MIME type
+        type_subtype, _ = mimetypes.guess_type(attachment_filename)
+        maintype, subtype = type_subtype.split("/")
+
+        with open(attachment_filename, "rb") as fp:
+            attachment_data = fp.read()
+        message.add_attachment(attachment_data, maintype, subtype)
+
+        # encoded message
+        encoded_message = urlsafe_b64encode(message.as_bytes()).decode()
+
+        create_message = {"raw": encoded_message}
+        self.client.send(userId="me", body=create_message).execute()
 
     def trash(self, id: str) -> None:
         """Move message to trash."""
@@ -363,6 +372,4 @@ class MessageClient(GmailClient):
         You can use batch_trash instead to put messages into trash can.
 
         """
-        self.client.batchDelete(
-            userId="me", body={"ids": ids}
-        ).execute()
+        self.client.batchDelete(userId="me", body={"ids": ids}).execute()
