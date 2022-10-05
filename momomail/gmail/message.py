@@ -312,7 +312,14 @@ class MessageClient(GmailClient):
             body["removeLabelIds"] = remove_label_ids
         self.client.modify(userId="me", id=id, body=body).execute()
 
-    def send(self, to: str, cc: str, subject: str, content: str, attachment_path: str):
+    def send(
+        self,
+        to: str,
+        cc: str,
+        subject: str,
+        content: str,
+        attachment_path: str,
+    ):
         """This method will create a draft and send."""
         message = EmailMessage()
         message.set_content(content)
@@ -323,7 +330,7 @@ class MessageClient(GmailClient):
         # attachment file
         attachment_filename = os.path.basename(attachment_path)
         # guessing the MIME type
-        type_subtype, _ = mimetypes.guess_type(attachment_filename)
+        type_subtype = (mimetypes.guess_type(attachment_filename))[0] or ""
         maintype, subtype = type_subtype.split("/")
 
         with open(attachment_filename, "rb") as fp:

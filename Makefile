@@ -1,10 +1,10 @@
 SHELL := /bin/bash
-PYTHON_SRC= $(wildcard *.py) $(wildcard */*.py) $(wildcard */*/*.py)
+PYTHON_SRC= $(wildcard tests/*.py) $(wildcard momomail/*/*.py)
 
 fmt:
 	@echo "Running black"
 	@source venv/bin/activate;\
-	black -l 70 $(PYTHON_SRC)
+	black $(PYTHON_SRC)
 
 flake:
 	@echo "Running autoflake"

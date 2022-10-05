@@ -44,9 +44,7 @@ class Thread:
             body["addLabelIds"] = add_label_ids
         if remove_label_ids:
             body["removeLabelIds"] = remove_label_ids
-        self.client.modify(
-            userId="me", id=self.id, body=body
-        ).execute()
+        self.client.modify(userId="me", id=self.id, body=body).execute()
 
     def trash(self) -> None:
         """Move this thread to trash."""
@@ -60,9 +58,7 @@ class Thread:
 class ThreadClient(GmailClient):
     """Thread Client"""
 
-    def __init__(
-        self, client_secret: dict, refresh_token: str
-    ) -> None:
+    def __init__(self, client_secret: dict, refresh_token: str) -> None:
         super().__init__(client_secret, refresh_token)
         self.client = self.service.users().threads()
         self.message_client = self.service.users().messages()
@@ -147,9 +143,7 @@ class ThreadClient(GmailClient):
                 includeSpamTrash=include_spam_trash,
             ).execute()
 
-        if not exhausted or (
-            exhausted and not result.get("nextPageToken")
-        ):
+        if not exhausted or (exhausted and not result.get("nextPageToken")):
             result.pop("resultSizeEstimate")
             return result
 
