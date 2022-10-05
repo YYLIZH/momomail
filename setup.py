@@ -8,6 +8,7 @@ setup(
         "google-api-python-client",
         "google-auth-httplib2",
         "google-auth-oauthlib",
+        "pydantic",
     ],
-    packages=["momomail", "momomail.gmail"],
+    package_dir={"": "momomail"},
 )
