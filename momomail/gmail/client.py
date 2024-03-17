@@ -15,11 +15,11 @@ SCOPES = ["https://mail.google.com/"]
 @lru_cache
 def get_client_secret() -> dict:
     """Read client secret data"""
-    if os.path.isfile("client_secret.json"):
-        with open("client_secret.json", "r", encoding="utf8") as file:
+    if os.path.isfile("credentials.json"):
+        with open("credentials.json", "r", encoding="utf8") as file:
             return json.load(file)
     raise FileNotFoundError(
-        "client_secret.json should be in current working directory."
+        "credentials.json should be in current working directory."
     )
 
 

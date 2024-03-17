@@ -8,7 +8,7 @@ Momomail is a gmail api wrapper. This package aims to provide a more straight fo
 pip install git+https://github.com/YYLIZH/momomail.git
 ```
 
-## Generate a client_secret.json file
+## Generate a credentials.json file
 
 This project uses Oauth to authenticate google api. You can go to google api page to apply an Oauth ID then download it. The content would be like below
 
@@ -34,7 +34,7 @@ We use a GmailClient to control the gmail api. There are two ways to initialize 
 
 ### If you don't know the refresh token of gmail api
 
-Download the Oauth ID json file, rename it to `client_secret.json` and **put it in the current directory**
+Download the Oauth ID json file, rename it to `credentials.json` and **put it in the current directory**
 
 ```python
 from momomail.gmail.client import GmailClient
@@ -67,7 +67,7 @@ message_client=MessageClient.setup()
   search_message support arguments inputs like gmail web ui: search string, before, after, read or unread, from, to
 
   ```python
-  messages=message_client.search_messages("twitter")
+  messages=message_client.list(search_string="twitter")
   ```
 - **get message**: `<br>`
   get_message is used to get detail of a message. The return object is a **Message** object.

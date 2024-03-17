@@ -200,21 +200,35 @@ class Message:
 class MessageClient(GmailClient):
     def __init__(self, client_secret: dict, refresh_token: str) -> None:
         super().__init__(client_secret, refresh_token)
-        self.client = self.service.users().messages()
+        self.labels_client = self.service.users().labels()
+        self.message_client = self.service.users().messages()
+        self.attachments_client = self.service.users().messages().attachments()
 
     def delete(self, id: str) -> None:
         """Delete message from mail box.
 
         Dangerous, suggest to use trash instead.
         """
-        self.client.delete(userId="me", id=id).execute()
+        self.message_client.delete(userId="me", id=id).execute()
 
     def get(self, id: str) -> Message:
         """Get message message by its id"""
-        message: dict = self.client.get(userId="me", id=id).execute()
-        return Message(raw_data=message, client=self.client)
+        message: dict = self.message_client.get(userId="me", id=id).execute()
+        return Message(raw_data=message, client=self.message_client)
+    
+    def list_labels(self) -> List[str]:
+        """List all the labels of this message
+        ref: 
+            https://developers.google.com/gmail/api/reference/rest/v1/users.labels
+            https://developers.google.com/gmail/api/guides/labels#manage_labels_on_messages_threads
 
-    def list(
+        Returns:
+            A list of label ids.
+
+        """
+        return self.labels_client.list(userId="me").execute().get("labels", [])
+
+    def list_messages(
         self,
         search_string: Optional[str] = None,
         before: Optional[str] = None,
@@ -222,6 +236,9 @@ class MessageClient(GmailClient):
         read: Optional[bool] = None,
         from_: Optional[str] = None,
         to: Optional[str] = None,
+        subject: Optional[str] = None,
+        max_results: int = 1000,
+        labels: Optional[List[str]] = None,
         include_spam_trash: bool = False,
         page_token: Optional[str] = None,
         exhausted: bool = False,
@@ -242,6 +259,8 @@ class MessageClient(GmailClient):
             read (bool): read or unread.
             from_ (str): The email sender.
             to (str): The email receiver.
+            max_results (int): The max results of the query. Default is 1000.
+            labels (list[str]): The label ids. ex. ['UNREAD', 'INBOX', "CATEGORY_PERSONAL", "CATEGORY_SOCIAL", "CATEGORY_PROMOTIONS", "CATEGORY_UPDATES", "CATEGORY_FORUMS"]
             page_token (str): Used to get specific page.
             exhausted (bool): Search all or not.
 
@@ -267,17 +286,20 @@ class MessageClient(GmailClient):
             criteria_list.append(f"from:{from_}")
         if to is not None:
             criteria_list.append(f"to:{to}")
+        if subject is not None:
+            criteria_list.append(f"subject:{subject}")
+            
         query_string = " ".join(criteria_list)
 
         if query_string:
-            result = self.client.list(
+            result = self.message_client.list(
                 userId="me",
                 q=query_string,
                 pageToken=page_token,
                 includeSpamTrash=include_spam_trash,
             ).execute()
         else:
-            result = self.client.list(
+            result = self.message_client.list(
                 userId="me",
                 pageToken=page_token,
                 includeSpamTrash=include_spam_trash,
@@ -291,14 +313,48 @@ class MessageClient(GmailClient):
         while result.get("nextPageToken"):
             # max limit is 250 units per second
             time.sleep(1)
-            result = self.client.list(
+            result = self.message_client.list(
                 userId="me",
                 q=query_string,
+                maxResults=max_results,
+                labels=labels,
                 pageToken=result["nextPageToken"],
             ).execute()
             total_result.extend(result["messages"])
         return {"messages": total_result, "nextPageToken": ""}
+    
+    def list_messages_by_raw_query(self, user_id: str ='me', max_results: int = 1000, query: str = None, page_token: Optional[str] = None, label_ids: Optional[List[str]] = None, include_spam_trash: bool = False) -> dict:
+        """List messages by raw query (i.e used in gmail search bar) and return the result.
 
+           Ref: 
+                https://developers.google.com/gmail/api/reference/rest/v1/users.messages/list
+
+           arguments:
+                user_id (str): The user id. Default is 'me'.
+                max_results (int): The max results of the query. Default is 1000.
+                query (str): The query string. eg: from:someuser@example.com rfc822msgid:<somemsgid@example.com> is:unread before:2022/1/31 after:2022/1/1 subject:hello
+                page_token (str): Used to get specific page.
+                label_ids (list[str]): The label ids.
+                include_spam_trash (bool): Include spam or trash.
+
+            Returns:
+            The formatted json result from google api. The key of jsons are messages and nextPageToken.
+
+            messages (list[dict]): A list of dict. The element dict has two keys: 'id' and 'threadId'.
+                Here the id is message id. Each message belongs to a certain thread, so there is also a threadId.
+            nextPageToken: A token which is used to get next page data. If exhausted is True, this item will be empty string.
+        """
+        result = self.message_client.list(
+            userId=user_id,
+            q=query,
+            pageToken=page_token,
+            maxResults=max_results,
+            labelIds=label_ids,
+            includeSpamTrash=include_spam_trash,
+        ).execute()
+
+        return result
+    
     def modify(
         self,
         id: str,
@@ -310,7 +366,7 @@ class MessageClient(GmailClient):
             body["addLabelIds"] = add_label_ids
         if remove_label_ids:
             body["removeLabelIds"] = remove_label_ids
-        self.client.modify(userId="me", id=id, body=body).execute()
+        self.message_client.modify(userId="me", id=id, body=body).execute()
 
     def send(
         self,
@@ -341,15 +397,15 @@ class MessageClient(GmailClient):
         encoded_message = urlsafe_b64encode(message.as_bytes()).decode()
 
         create_message = {"raw": encoded_message}
-        self.client.send(userId="me", body=create_message).execute()
+        self.message_client.send(userId="me", body=create_message).execute()
 
     def trash(self, id: str) -> None:
         """Move message to trash."""
-        self.client.trash(userId="me", id=id).execute()
+        self.message_client.trash(userId="me", id=id).execute()
 
     def untrash(self, id: str) -> None:
         """Untrash message."""
-        self.client.untrash(userId="me", id=id).execute()
+        self.message_client.untrash(userId="me", id=id).execute()
 
     def batch_modify(
         self,
@@ -362,7 +418,7 @@ class MessageClient(GmailClient):
             body["addLabelIds"] = add_label_ids
         if remove_label_ids:
             body["removeLabelIds"] = remove_label_ids
-        self.client.batchModify(userId="me", body=body).execute()
+        self.message_client.batchModify(userId="me", body=body).execute()
 
     def batch_trash(self, ids: List[str]) -> None:
         """Batch move messages into trash can"""
@@ -379,4 +435,4 @@ class MessageClient(GmailClient):
         You can use batch_trash instead to put messages into trash can.
 
         """
-        self.client.batchDelete(userId="me", body={"ids": ids}).execute()
+        self.message_client.batchDelete(userId="me", body={"ids": ids}).execute()
