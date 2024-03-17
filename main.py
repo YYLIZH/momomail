@@ -8,7 +8,7 @@ from momomail.gmail.message import MessageClient
 
 
 
-#client=GmailClient.setup()
+client=GmailClient.setup()
 message_client=MessageClient.setup()
 
 #lables = message_client.list_labels()
