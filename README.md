@@ -67,7 +67,7 @@ message_client=MessageClient.setup()
   search_message support arguments inputs like gmail web ui: search string, before, after, read or unread, from, to
 
   ```python
-  messages=message_client.search_messages("twitter")
+  messages=message_client.list(search_string="twitter")
   ```
 - **get message**: `<br>`
   get_message is used to get detail of a message. The return object is a **Message** object.
