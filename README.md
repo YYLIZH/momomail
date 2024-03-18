@@ -67,7 +67,7 @@ message_client=MessageClient.setup()
   search_message support arguments inputs like gmail web ui: search string, before, after, read or unread, from, to
 
   ```python
-  messages=message_client.search_messages("twitter")
+  messages=message_client.list("twitter")
   ```
 - **get message**: `<br>`
   get_message is used to get detail of a message. The return object is a **Message** object.
@@ -111,10 +111,11 @@ methods: delete, trash, untrash
 
    In google's refresh token policy, if the app in google is a test app, the refresh token expired after 7 days. You need to publish your app to get a long-lived refresh token.
 
-## Contributing
+## For Developers
+### Contributing
 
 This is an immature project. PRs are welcome. Feel free to ask any questions or offer suggestions
 
-
-
-remote launch job
+### Version Control
+Currently this project use pip tools for version control. https://github.com/jazzband/pip-tools
+To update requirements.txt, run `pip-compile requirements.in`
