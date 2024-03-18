@@ -56,3 +56,6 @@ venv.bak/
 # google credential
 client_secret*.json
 refresh_token.json
+
+# Customize
+.vscode/
