@@ -5,7 +5,7 @@ Momomail is a gmail api wrapper. This package aims to provide a more straight fo
 ## Install
 
 ```bash
-pip install git+https://github.com/YYLIZH/momomail.git
+pip install momomail
 ```
 
 ## Generate a client_secret.json file
@@ -63,19 +63,19 @@ from momomail.gmail.message import MessageClient
 message_client=MessageClient.setup()
 ```
 
-- **search messages**: `<br>`
+- **search messages**: <br>
   search_message support arguments inputs like gmail web ui: search string, before, after, read or unread, from, to
 
   ```python
   messages=message_client.list("twitter")
   ```
-- **get message**: `<br>`
+- **get message**: <br>
   get_message is used to get detail of a message. The return object is a **Message** object.
 
   ```python
   message:Message=message_client.get_message(id="message_id")
   ```
-- **batch modify**: `<br>`
+- **batch modify**: <br>
   batch_modify modify messages' labels
 
   ```python
@@ -84,13 +84,13 @@ message_client=MessageClient.setup()
 
 Gmail moves messages into trash can by adding a "TRASH" label. Thus, message client uses this property to make batch trash and batch untrash method.
 
-- **batch trash**: `<br>`
+- **batch trash**: <br>
   Move messages to trash can
 
   ```python
   message_client.batch_trash(ids=["aaa","bbb"])
   ```
-- **batch untrash**: `<br>`
+- **batch untrash**: <br>
   Move messages out of trash can
 
   ```python
