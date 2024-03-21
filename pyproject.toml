@@ -1,9 +1,6 @@
 [build-system]
-requires = ["setuptools >= 61.0","wheel", "setuptools-git-versioning"]
+requires = ["setuptools >= 61.0", "wheel"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools-git-versioning]
-enabled = true
 
 [project]
 name = "momomail"
@@ -19,7 +16,6 @@ authors = [
     {name = "YYLIZH", email = "ryne91009@gmail.com"},
 ]
 description = "Mail Client"
-readme = "README.md"
 license = {file = "LICENSE"}
 keywords = ["gmail"]
 classifiers = [
@@ -28,6 +24,16 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+[tool.setuptools.dynamic]
+version = { attr = "momomail.VERSION" }
+readme = { file = ["README.md"], content-type = "text/markdown" }
+
 [project.urls]
 Homepage = "https://github.com/YYLIZH/momomail"
 Issues = "https://github.com/YYLIZH/momomail/issues"
+
+[tool.setuptools]
+packages = [
+    "momomail",
+    "momomail.gmail",
+]
