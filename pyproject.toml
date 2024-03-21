@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools >= 61.0","wheel", "setuptools-git-versioning"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools-git-versioning]
+enabled = true
+
+[project]
+name = "momomail"
+dynamic = ["version"]
+dependencies = [
+    "google-api-python-client", 
+    "google-auth-httplib2", 
+    "google-auth-oauthlib",
+    "pydantic"
+]
+requires-python = ">=3.10"
+authors = [
+    {name = "YYLIZH", email = "ryne91009@gmail.com"},
+]
+description = "Mail Client"
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["gmail"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/YYLIZH/momomail"
+Issues = "https://github.com/YYLIZH/momomail/issues"
